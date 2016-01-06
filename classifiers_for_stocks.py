@@ -1,3 +1,8 @@
+'''
+sbaronia - this file has few methods defined that are avaialble in Spark MLlib
+We save model, generate training and testing graphs, calculate rms error and 
+trend error
+'''
 
 from pyspark import SparkConf, SparkContext
 import sys, string
@@ -15,10 +20,14 @@ import matplotlib.ticker as ticker
 
 
 '''
-=================
-   ALL METHODS
-=================
+=======================================
+   	         ALL METHODS
+Few Methods Are Not Available in MLlib
+=======================================
 '''
+
+''' Naive Bayes 
+   ============= '''
 # output_n 
 # 0 - Next Day Actual Opening 	- 6 actual mapping col 1
 # 1 - Next Day Actual  High 	-7  col2
@@ -55,19 +64,10 @@ def naiveBayes(features,sc,output_n):
 
 		naivebayes_model = NaiveBayes.train(sc.parallelize(labeled_training),1.0)
 			
-	return predictions
+	return naivebayes_model,predictions
 
-# # not in pyspark
-def logisticRegression(features,sc,output_n):
-	training_data, testing_data = features_and_label.randomSplit([0.8, 0.2], seed = 0)
-	logregression_model = LogisticRegressionWithLBFGS.train(training_data)
-	prediction = testing_data.map(lambda line: (line.label, logregression_model.predict(line.features)))
-	return prediction 
-
-# # not in pyspark
-# def multilayerPerceptron(features,sc,output_n):
-# 	return
-
+''' Linear Regression
+    =================='''
 def linearRegression(features,sc,output_n):
 	features_and_label = features.collect()
 	training_features_labels = features_and_label[0:70]
@@ -77,7 +77,18 @@ def linearRegression(features,sc,output_n):
 	
 	linearregression_model = LinearRegressionWithSGD.train(training_data,iterations=0,regParam=200)
 	prediction = testing_data.map(lambda line: (line.label, linearregression_model.predict(line.features)))
-	return prediction
+	return linearregression_model,prediction
+
+# # not in pyspark
+# def logisticRegression(features,sc,output_n):
+# 	training_data, testing_data = features_and_label.randomSplit([0.8, 0.2], seed = 0)
+# 	logregression_model = LogisticRegressionWithLBFGS.train(training_data)
+# 	prediction = testing_data.map(lambda line: (line.label, logregression_model.predict(line.features)))
+# 	return prediction 
+
+# # not in pyspark
+# def multilayerPerceptron(features,sc,output_n):
+# 	return
 
 '''
 ====================
@@ -87,19 +98,19 @@ def linearRegression(features,sc,output_n):
 def call_the_method(input_number,features_labels,sc,output_n):
 	if input_number == 1:
 		print "Calling Naive Bayes"
-		prediciton = naiveBayes(features_labels,sc,output_n)
+		model,prediciton = naiveBayes(features_labels,sc,output_n)
 	elif input_number == 2:
-		prediciton = logisticRegression(features_labels,sc,output_n)
+		model,prediciton = logisticRegression(features_labels,sc,output_n)
 	elif input_number == 3:
 		print "Calling Linear Regression"
-		prediciton = linearRegression(features_labels,sc,output_n)
+		model,prediciton = linearRegression(features_labels,sc,output_n)
 	elif input_number == 4:
-		prediciton = multilayerPerceptron(features_labels,sc,output_n)
+		model,prediciton = multilayerPerceptron(features_labels,sc,output_n)
 	else:
 		print "Wrong method selected"
 		sys.exit(1)
 
-	return sc.parallelize(prediciton)
+	return model,sc.parallelize(prediciton)
 
 '''
 ==============
@@ -197,7 +208,7 @@ def main():
 	method_needed = sys.argv[1]
 	stock_file = sys.argv[2]
 	company = sys.argv[3]
-	output_predict_file = sys.argv[4]
+	output_model = sys.argv[4]
 	features_needed = sys.argv[5]
 	output_needed = sys.argv[6]
 
@@ -213,7 +224,7 @@ def main():
 
 	features_labels = file_data.map(lambda line: parseNeededFeatureAndLabel(line,features_needed,output_needed)).cache()
 	
-	prediction = call_the_method(int(method_needed),features_labels,sc,(int(output_needed)-1)).cache()
+	model,prediction = call_the_method(int(method_needed),features_labels,sc,(int(output_needed)-1))
 
 	print "\n**********************\n"
 	print " Predictions := \n" 
@@ -248,11 +259,16 @@ def main():
 	print "**********************\n"
 
 	draw_graph(prediction,output_needed,error,count,company)
+
+	print "\n**********************\n"
+	print " Saving Model := \n" 
+	print "**********************\n"
+
+	model.save(sc, output_model)
 			
 	
 if __name__ == "__main__":
 	if (len(sys.argv) != 7):
-		print "Usage: Please provide a stock file to be read and output file name" + \
-		"spark-submit --master local[*] naivebayes_predict_stocks.py inputstock output"
+		print "Usage: Please see usage in call_classifiers_for_stocks.py"
 		sys.exit(1)
 	main()

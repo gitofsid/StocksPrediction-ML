@@ -1,5 +1,12 @@
+'''
+sbaronia - this file calls the classifiers_for_stocks file with correct 
+method that we want to use 
+'''
+
+
 import sys
 import os
+import shutil
 
 def ask_for_algorithm():
 	print "Enter the method you want to use (one method): \n" + \
@@ -62,7 +69,7 @@ def ask_for_features():
 
 def main():
 	stock_file = sys.argv[1]
-	output_predict_file = sys.argv[2]
+	output_model = sys.argv[2]
 	company = sys.argv[3]
 	method_needed = ask_for_algorithm()
 	output_needed = ask_for_output()
@@ -72,7 +79,7 @@ def main():
 	os.system('spark-submit --master local[*] classifiers_for_stocks.py %s %s %s %s %s %s' % (method_needed, 
 																							  stock_file,
 																							  company,
-																							  output_predict_file,
+																							  output_model,
 																							  features_needed,
 																							  output_needed))
 
@@ -82,7 +89,8 @@ def main():
 
 if __name__ == "__main__":
 	if (len(sys.argv) != 4):
-		print "Usage: Please provide a stock file to be read and output file name" + \
-		"spark-submit --master local[*] svm_predict_stocks.py inputstock output"
-		sys.exit(1)	
+		print "Please provide a stock file to be read and output directory with name output and stock name" + \
+		"\nUsage: \"python call_classifiers_for_stocks.py input_files/goog.csv_merged.csv output Google\""
+		sys.exit(1)
+	shutil.rmtree("output", ignore_errors=True)
 	main()
