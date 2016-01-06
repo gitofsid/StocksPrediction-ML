@@ -1,3 +1,6 @@
+'''
+sbaronia - SVM classifier
+'''
 from pyspark import SparkConf, SparkContext
 from pyspark.sql.functions import split
 import sys, string
