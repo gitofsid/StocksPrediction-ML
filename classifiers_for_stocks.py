@@ -244,9 +244,7 @@ def main():
 	print "\n**********************************************\n"
 	print " Number of directional mismatch := %d\n" % count 
 	print "***********************************************\n"
-
-	
-						   
+					   
 	error_num = prediction.map(lambda (x, y): (x - y)**2).reduce(lambda x, y: x + y)
 	error = float(math.sqrt(error_num/prediction.count()))
 
