@@ -16,6 +16,7 @@ Usage
 Use following command to start the analysis - 
 
 Google - python call_classifiers_for_stocks.py input_files/goog.csv_merged.csv output Google
+
 Facebook - python call_classifiers_for_stocks.py input_files/fb.csv_merged.csv output Facebook
 
 Output directory "output" will be created that save our model.
