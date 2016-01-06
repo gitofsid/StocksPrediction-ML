@@ -76,16 +76,10 @@ def main():
 	features_needed = ask_for_features()
 
 	
-	os.system('spark-submit --master local[*] classifiers_for_stocks.py %s %s %s %s %s %s' % (method_needed, 
-																							  stock_file,
-																							  company,
-																							  output_model,
-																							  features_needed,
-																							  output_needed))
+	os.system('spark-submit --master local[*] classifiers_for_stocks.py %s %s %s %s %s %s' % 
+		(method_needed, stock_file, company, output_model, features_needed, output_needed))
 
 	print "CLASSIFICATION DONE!!!"
-
-
 
 if __name__ == "__main__":
 	if (len(sys.argv) != 4):
